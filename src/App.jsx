@@ -385,18 +385,6 @@ function App() {
                       <span style={{fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px'}}>Kattaligi (Umumiy)</span>
                       <input type="range" min="0.5" max="2" step="0.05" value={elementStyles[selectedElement].scale} onChange={(e) => updateStyle(selectedElement, 'scale', e.target.value)} style={{width: '100%'}}/>
                     </div>
-                    {selectedElement !== 'magnifier' && selectedElement !== 'sizes' && (
-                      <div style={{ display: 'flex', gap: '10px' }}>
-                        <div style={{ flex: 1 }}>
-                          <span style={{fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '2px'}}>Kengligi (Gorizontal)</span>
-                          <input type="range" min="0.5" max="3" step="0.05" value={elementStyles[selectedElement].scaleX || 1} onChange={(e) => updateStyle(selectedElement, 'scaleX', e.target.value)} style={{width: '100%'}}/>
-                        </div>
-                        <div style={{ flex: 1 }}>
-                          <span style={{fontSize: '11px', color: '#aaa', display: 'block', marginBottom: '2px'}}>Balandligi (Vertikal)</span>
-                          <input type="range" min="0.5" max="3" step="0.05" value={elementStyles[selectedElement].scaleY || 1} onChange={(e) => updateStyle(selectedElement, 'scaleY', e.target.value)} style={{width: '100%'}}/>
-                        </div>
-                      </div>
-                    )}
                   </div>
                 )}
 
@@ -676,11 +664,7 @@ function App() {
                   <p className="badge-subtitle" style={{ color: elementStyles.badge.subtitleColor }}>{data.badgeSubtitle}</p>
                 </div>
                 {selectedElement === 'badge' && (
-                  <>
-                    <div className="resize-handle corner" onPointerDown={(e) => handleResizeDown(e, 'badge', 'corner')} />
-                    <div className="resize-handle right" onPointerDown={(e) => handleResizeDown(e, 'badge', 'horizontal')} />
-                    <div className="resize-handle bottom" onPointerDown={(e) => handleResizeDown(e, 'badge', 'vertical')} />
-                  </>
+                  <div className="resize-handle corner" onPointerDown={(e) => handleResizeDown(e, 'badge', 'corner')} />
                 )}
               </div>
 
@@ -718,11 +702,7 @@ function App() {
                   <div className="mc-value medium">{data.codeValue}</div>
                 </div>
                 {selectedElement === 'modelCode' && (
-                  <>
-                    <div className="resize-handle corner" onPointerDown={(e) => handleResizeDown(e, 'modelCode', 'corner')} />
-                    <div className="resize-handle right" onPointerDown={(e) => handleResizeDown(e, 'modelCode', 'horizontal')} />
-                    <div className="resize-handle bottom" onPointerDown={(e) => handleResizeDown(e, 'modelCode', 'vertical')} />
-                  </>
+                  <div className="resize-handle corner" onPointerDown={(e) => handleResizeDown(e, 'modelCode', 'corner')} />
                 )}
               </div>
 
