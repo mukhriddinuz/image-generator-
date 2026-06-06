@@ -398,7 +398,7 @@ body {
   display: flex;
   align-items: center;
   position: relative;
-  height: calc(3.5 * var(--cqw) * var(--sy, 1));
+  height: calc(3.5 * var(--cqw));
 }
 
 .size-box {
@@ -406,7 +406,7 @@ body {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: calc(3.5 * var(--cqw) * var(--sx, 1));
+  width: calc(3.5 * var(--cqw));
   height: 100%;
   border: calc(0.15 * var(--cqw)) solid var(--box-color, #1a1a1a);
   border-right: none;

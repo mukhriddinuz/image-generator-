@@ -79,10 +79,12 @@ function App() {
       borderColor: '#1a1a1a', 
       textColor: '#1a1a1a' 
     },
-    sizes: { 
-      opacity: 1, 
-      scale: 1, 
-      bgColor: '#ebe4dc', 
+    sizes: {
+      opacity: 1,
+      scale: 1,
+      scaleX: 1,
+      scaleY: 1,
+      bgColor: '#ebe4dc',
       textColor: '#1a1a1a',
       borderColor: '#1a1a1a'
     },
@@ -380,6 +382,17 @@ function App() {
                   <div style={{ marginBottom: '16px' }}>
                     <span style={{fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '6px'}}>Kattaligi (Umumiy Scale)</span>
                     <input type="range" min="10" max="80" step="1" value={positions.logo.scale} onChange={(e) => setPositions({...positions, logo: {...positions.logo, scale: e.target.value}})} style={{width: '100%'}}/>
+                  </div>
+                ) : selectedElement === 'sizes' ? (
+                  <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div>
+                      <span style={{fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px'}}>Eni (Kenglik)</span>
+                      <input type="range" min="0.5" max="4" step="0.05" value={elementStyles.sizes.scaleX || 1} onChange={(e) => updateStyle('sizes', 'scaleX', parseFloat(e.target.value))} style={{width: '100%'}}/>
+                    </div>
+                    <div>
+                      <span style={{fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px'}}>Bo'yi (Balandlik)</span>
+                      <input type="range" min="0.5" max="4" step="0.05" value={elementStyles.sizes.scaleY || 1} onChange={(e) => updateStyle('sizes', 'scaleY', parseFloat(e.target.value))} style={{width: '100%'}}/>
+                    </div>
                   </div>
                 ) : (
                   <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -723,13 +736,11 @@ function App() {
                   <div 
                     className={`sizes-overlay draggable-item ${draggingElement === 'sizes' ? 'dragging' : ''} ${selectedElement === 'sizes' ? 'selected-element' : ''}`}
                     onPointerDown={(e) => handlePointerDown(e, 'sizes')}
-                    style={{ 
-                      top: `calc(${positions.sizes.y} * var(--cqw))`, 
+                    style={{
+                      top: `calc(${positions.sizes.y} * var(--cqw))`,
                       left: `calc(${positions.sizes.x} * var(--cqw))`,
-                      transform: `scale(${elementStyles.sizes.scale})`,
+                      transform: `scaleX(${elementStyles.sizes.scaleX || 1}) scaleY(${elementStyles.sizes.scaleY || 1})`,
                       transformOrigin: 'top left',
-                      '--sx': elementStyles.sizes.scaleX || 1,
-                      '--sy': elementStyles.sizes.scaleY || 1,
                       background: hexToRgba(elementStyles.sizes.bgColor, elementStyles.sizes.opacity)
                     }}
                   >
@@ -748,13 +759,11 @@ function App() {
                 <div 
                   className={`free-size-badge draggable-item ${draggingElement === 'sizes' ? 'dragging' : ''} ${selectedElement === 'sizes' ? 'selected-element' : ''}`}
                   onPointerDown={(e) => handlePointerDown(e, 'sizes')}
-                  style={{ 
-                    top: `calc(${positions.sizes.y} * var(--cqw))`, 
+                  style={{
+                    top: `calc(${positions.sizes.y} * var(--cqw))`,
                     left: `calc(${positions.sizes.x} * var(--cqw))`,
-                    transform: `scale(${elementStyles.sizes.scale})`,
+                    transform: `scaleX(${elementStyles.sizes.scaleX || 1}) scaleY(${elementStyles.sizes.scaleY || 1})`,
                     transformOrigin: 'top left',
-                    '--sx': elementStyles.sizes.scaleX || 1,
-                    '--sy': elementStyles.sizes.scaleY || 1,
                     background: hexToRgba(elementStyles.sizes.bgColor, elementStyles.sizes.opacity),
                     color: elementStyles.sizes.textColor,
                     border: freeSizeHasBorder ? `calc(0.2 * var(--cqw)) solid ${elementStyles.sizes.borderColor}` : 'none',
