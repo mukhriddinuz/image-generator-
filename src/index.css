@@ -309,7 +309,7 @@ body {
 .bracket-left-corner, .bracket-right-corner {
   position: absolute;
   width: calc(0.2 * var(--cqw));
-  height: calc(2.5 * var(--cqw));
+  height: calc(2.0 * var(--cqw));
   background-color: var(--model-color);
 }
 
@@ -331,6 +331,14 @@ body {
 .bracket-bottom .bracket-right-corner {
   right: 0;
   bottom: 50%;
+}
+
+.bracket-top {
+  margin-bottom: calc(1.5 * var(--cqw));
+}
+
+.bracket-bottom {
+  margin-top: calc(1.5 * var(--cqw));
 }
 
 .bracket-label {

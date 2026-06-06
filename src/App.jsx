@@ -395,7 +395,8 @@ function App() {
         const my = cx(positions.modelCode.y);
         const color = elementStyles.modelCode.textColor || '#1a1a1a';
         const lw = 0.2 * cqw * ms;
-        const cornerH = 2.5 * cqw * ms;
+        const cornerH = 2.0 * cqw * ms;
+        const gap = 1.5 * cqw * ms; // space between bracket row and model value
         const labelSize = 2.2 * cqw * ms;
         const valueSize = 5 * cqw * ms;
         const lPad = 0.5 * cqw * ms;
@@ -430,16 +431,16 @@ function App() {
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
         ctx.fillText(data.modelLabel, cenX, my + labelRowH / 2);
 
-        // ── Model value ───────────────────────────────────
-        const valY = my + labelRowH;
+        // ── Model value (with gap below bracket-top) ─────
+        const valY = my + labelRowH + gap;
         ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
         ctx.textBaseline = 'top';
         ctx.fillText(data.modelValue, cenX, valY);
         const valH = valueSize * 1.0;
 
-        // ── Bottom bracket: corners go UP, line at bottom ─
-        const botBracketY = valY + valH;
-        const botLineY = botBracketY + cornerH - lw; // line at bottom
+        // ── Bottom bracket (with gap above) ───────────────
+        const botBracketY = valY + valH + gap;
+        const botLineY = botBracketY + cornerH - lw;
 
         ctx.fillRect(mx, botBracketY, lw, cornerH);
         ctx.fillRect(mx + bracketW - lw, botBracketY, lw, cornerH);
