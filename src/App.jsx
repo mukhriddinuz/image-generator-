@@ -384,15 +384,8 @@ function App() {
                     <input type="range" min="10" max="80" step="1" value={positions.logo.scale} onChange={(e) => setPositions({...positions, logo: {...positions.logo, scale: e.target.value}})} style={{width: '100%'}}/>
                   </div>
                 ) : selectedElement === 'sizes' ? (
-                  <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                    <div>
-                      <span style={{fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px'}}>Eni (Kenglik)</span>
-                      <input type="range" min="0.5" max="4" step="0.05" value={elementStyles.sizes.scaleX || 1} onChange={(e) => updateStyle('sizes', 'scaleX', parseFloat(e.target.value))} style={{width: '100%'}}/>
-                    </div>
-                    <div>
-                      <span style={{fontSize: '12px', color: '#aaa', display: 'block', marginBottom: '4px'}}>Bo'yi (Balandlik)</span>
-                      <input type="range" min="0.5" max="4" step="0.05" value={elementStyles.sizes.scaleY || 1} onChange={(e) => updateStyle('sizes', 'scaleY', parseFloat(e.target.value))} style={{width: '100%'}}/>
-                    </div>
+                  <div style={{ marginBottom: '16px', padding: '10px', background: '#111', borderRadius: '6px', fontSize: '12px', color: '#888', textAlign: 'center' }}>
+                    ← O'ng uchidan tort: kenglik<br/>↓ Pastki uchidan tort: balandlik
                   </div>
                 ) : (
                   <div style={{ marginBottom: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
@@ -739,8 +732,8 @@ function App() {
                     style={{
                       top: `calc(${positions.sizes.y} * var(--cqw))`,
                       left: `calc(${positions.sizes.x} * var(--cqw))`,
-                      transform: `scaleX(${elementStyles.sizes.scaleX || 1}) scaleY(${elementStyles.sizes.scaleY || 1})`,
-                      transformOrigin: 'top left',
+                      '--sx': elementStyles.sizes.scaleX || 1,
+                      '--sy': elementStyles.sizes.scaleY || 1,
                       background: hexToRgba(elementStyles.sizes.bgColor, elementStyles.sizes.opacity)
                     }}
                   >
@@ -751,7 +744,10 @@ function App() {
                       </div>
                     ))}
                     {selectedElement === 'sizes' && (
-                      <div className="resize-handle corner" onPointerDown={(e) => handleResizeDown(e, 'sizes', 'corner')} />
+                      <>
+                        <div className="resize-handle right" onPointerDown={(e) => handleResizeDown(e, 'sizes', 'horizontal')} />
+                        <div className="resize-handle bottom" onPointerDown={(e) => handleResizeDown(e, 'sizes', 'vertical')} />
+                      </>
                     )}
                   </div>
                 )
@@ -762,8 +758,8 @@ function App() {
                   style={{
                     top: `calc(${positions.sizes.y} * var(--cqw))`,
                     left: `calc(${positions.sizes.x} * var(--cqw))`,
-                    transform: `scaleX(${elementStyles.sizes.scaleX || 1}) scaleY(${elementStyles.sizes.scaleY || 1})`,
-                    transformOrigin: 'top left',
+                    '--sx': elementStyles.sizes.scaleX || 1,
+                    '--sy': elementStyles.sizes.scaleY || 1,
                     background: hexToRgba(elementStyles.sizes.bgColor, elementStyles.sizes.opacity),
                     color: elementStyles.sizes.textColor,
                     border: freeSizeHasBorder ? `calc(0.2 * var(--cqw)) solid ${elementStyles.sizes.borderColor}` : 'none',
@@ -774,7 +770,10 @@ function App() {
                 >
                   {freeSizeText}
                   {selectedElement === 'sizes' && (
-                    <div className="resize-handle corner" onPointerDown={(e) => handleResizeDown(e, 'sizes', 'corner')} />
+                    <>
+                      <div className="resize-handle right" onPointerDown={(e) => handleResizeDown(e, 'sizes', 'horizontal')} />
+                      <div className="resize-handle bottom" onPointerDown={(e) => handleResizeDown(e, 'sizes', 'vertical')} />
+                    </>
                   )}
                 </div>
               )}

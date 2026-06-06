@@ -398,7 +398,7 @@ body {
   display: flex;
   align-items: center;
   position: relative;
-  height: calc(3.5 * var(--cqw));
+  height: calc(3.5 * var(--cqw) * var(--sy, 1));
 }
 
 .size-box {
@@ -406,7 +406,7 @@ body {
   left: 0;
   top: 50%;
   transform: translateY(-50%);
-  width: calc(3.5 * var(--cqw));
+  width: calc(3.5 * var(--cqw) * var(--sx, 1));
   height: 100%;
   border: calc(0.15 * var(--cqw)) solid var(--box-color, #1a1a1a);
   border-right: none;
@@ -433,7 +433,7 @@ body {
 }
 
 .size-text {
-  margin-left: calc(3.5 * var(--cqw)); /* Places text exactly where the missing right border is */
+  margin-left: calc(3.5 * var(--cqw) * var(--sx, 1));
   font-family: 'Inter', sans-serif;
   font-size: calc(2.2 * var(--cqw));
   font-weight: 700;
