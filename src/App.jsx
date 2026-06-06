@@ -38,7 +38,8 @@ function App() {
   const borderWidth = 16;
 
   // Magnifier state
-  const [magnifierPoint, setMagnifierPoint] = useState(savedState?.magnifierPoint || {x: 65, y: 75}); // Default point
+  const [magnifierPoint, setMagnifierPoint] = useState(savedState?.magnifierPoint || {x: 65, y: 75});
+  const [showMagnifier, setShowMagnifier] = useState(savedState?.showMagnifier ?? true);
   const [isPicking, setIsPicking] = useState(false);
   const [aspectRatio, setAspectRatio] = useState(1.25); // Default 4:5
 
@@ -97,7 +98,7 @@ function App() {
 
   const saveTemplate = () => {
     const template = {
-      data, customSizesText, sizesMode, freeSizeText, freeSizeHasBorder, badgeHasBorder, positions, elementStyles, magnifierPoint, borderWidth
+      data, customSizesText, sizesMode, freeSizeText, freeSizeHasBorder, badgeHasBorder, positions, elementStyles, magnifierPoint, showMagnifier, borderWidth
     };
     localStorage.setItem('milana_saved_template', JSON.stringify(template));
     alert("Shablon muvaffaqiyatli saqlandi! Endi sahifaga har kirganingizda barcha elementlar va matnlar aynan shu holatda joylashib turadi.");
@@ -492,6 +493,14 @@ function App() {
               <span style={{ fontSize: '11px' }}>{isPicking ? 'Rasmdan tanlang...' : 'Chiziq nishoni'}</span>
             </button>
           </div>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px', cursor: 'pointer', fontSize: '14px' }}>
+            <input
+              type="checkbox"
+              checked={showMagnifier}
+              onChange={e => setShowMagnifier(e.target.checked)}
+            />
+            Doira va chiziqni ko'rsatish
+          </label>
         </div>
 
         <div className="input-group">
@@ -779,7 +788,7 @@ function App() {
               )}
 
               {/* Magnifier */}
-              {(magnifierPoint || fabricImage) && (
+              {showMagnifier && (magnifierPoint || fabricImage) && (
                 <>
                   {magnifierPoint && (() => {
                     const scale = Number(elementStyles.magnifier.scale) || 1;
