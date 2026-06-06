@@ -241,12 +241,11 @@ body {
 .badge-overlay {
   position: absolute;
   background: transparent;
-  border-radius: calc(0.8 * var(--cqw)); /* sharper corners */
+  border-radius: calc(1.5 * var(--cqw));
   overflow: hidden;
   font-family: 'Inter', sans-serif;
   text-align: center;
   pointer-events: auto;
-  box-shadow: 0 calc(0.2 * var(--cqw)) calc(0.5 * var(--cqw)) rgba(0,0,0,0.05); /* very subtle */
   display: flex;
   flex-direction: column;
   width: calc(18 * var(--cqw) * var(--sx, 1));

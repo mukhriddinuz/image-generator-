@@ -349,21 +349,32 @@ function App() {
         const tPad = 0.8 * cqw * bs;
         const bPad = 0.4 * cqw * bs;
         const blw = 0.15 * cqw;
+        const radius = 1.5 * cqw * bs;
         const titleLines = data.badgeTitle.split('\n');
         const subtitleLines = data.badgeSubtitle.split('\n');
         const topH = tPad + titleLines.length * titleSize * 1.15 + tPad * 0.75;
         const botH = bPad + subtitleLines.length * subtitleSize * 1.2 + bPad;
         const totalH = topH + botH;
 
+        // Draw with rounded corners using clip
+        ctx.save();
+        ctx.beginPath();
+        ctx.roundRect(bx, by, badgeW, totalH, radius);
+        ctx.clip();
+
         ctx.fillStyle = hexToRgba(elementStyles.badge.topBg, op);
         ctx.fillRect(bx, by, badgeW, topH);
         ctx.fillStyle = hexToRgba(elementStyles.badge.bottomBg, op);
         ctx.fillRect(bx, by + topH, badgeW, botH);
 
+        ctx.restore();
+
         if (badgeHasBorder) {
           ctx.strokeStyle = elementStyles.badge.borderColor;
           ctx.lineWidth = blw;
-          ctx.strokeRect(bx + blw / 2, by + blw / 2, badgeW - blw, totalH - blw);
+          ctx.beginPath();
+          ctx.roundRect(bx + blw / 2, by + blw / 2, badgeW - blw, totalH - blw, radius);
+          ctx.stroke();
           ctx.beginPath(); ctx.moveTo(bx, by + topH); ctx.lineTo(bx + badgeW, by + topH); ctx.stroke();
         }
 
@@ -389,44 +400,58 @@ function App() {
         const valueSize = 5 * cqw * ms;
         const lPad = 0.5 * cqw * ms;
 
-        ctx.fillStyle = color; ctx.strokeStyle = color;
+        ctx.fillStyle = color;
 
+        // Measure texts to determine bracket width
         ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
         const valW = ctx.measureText(data.modelValue).width;
         ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
         const labW = ctx.measureText(data.modelLabel).width;
-        const bracketW = Math.max(valW, labW + lPad * 2) + lw * 2;
+        // Bracket width matches value width (like CSS 100% - 10cqw of overlay)
+        const bracketW = valW - 2 * cqw * ms;
         const cenX = mx + bracketW / 2;
 
-        // Top bracket corners + horizontal lines + label
-        ctx.fillRect(mx, my, lw, cornerH);
-        ctx.fillRect(mx + bracketW - lw, my, lw, cornerH);
-        const halfLW = (bracketW - labW - lPad * 2 - lw * 2) / 2;
-        ctx.fillRect(mx + lw, my, halfLW, lw);
-        ctx.fillRect(cenX + labW / 2 + lPad, my, halfLW, lw);
+        // ── Top bracket: horizontal line + label row ──────
+        // Label row height ≈ labelSize * 1.1 (same as CSS flex row)
+        const labelRowH = labelSize * 1.1;
+        const topLineY = my + labelRowH / 2 - lw / 2; // center of row
+
+        // Left and right corners: start at line center, go DOWN
+        ctx.fillRect(mx, topLineY, lw, cornerH);
+        ctx.fillRect(mx + bracketW - lw, topLineY, lw, cornerH);
+
+        // Horizontal lines (gap in the middle for label)
+        const halfLineW = (bracketW - labW - lPad * 2 - lw * 2) / 2;
+        ctx.fillRect(mx + lw, topLineY, halfLineW, lw);
+        ctx.fillRect(mx + lw + halfLineW + labW + lPad * 2, topLineY, halfLineW, lw);
+
+        // Label text centered in row
         ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
         ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-        ctx.fillText(data.modelLabel, cenX, my + lw / 2);
+        ctx.fillText(data.modelLabel, cenX, my + labelRowH / 2);
 
-        // Model value
-        const valY = my + cornerH;
+        // ── Model value ───────────────────────────────────
+        const valY = my + labelRowH;
         ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
         ctx.textBaseline = 'top';
         ctx.fillText(data.modelValue, cenX, valY);
+        const valH = valueSize * 1.0;
 
-        // Bottom bracket
-        const botBY = valY + valueSize;
-        ctx.fillRect(mx, botBY, lw, cornerH);
-        ctx.fillRect(mx + bracketW - lw, botBY, lw, cornerH);
-        ctx.fillRect(mx, botBY + cornerH - lw, bracketW, lw);
+        // ── Bottom bracket: corners go UP, line at bottom ─
+        const botBracketY = valY + valH;
+        const botLineY = botBracketY + cornerH - lw; // line at bottom
 
-        // Code section
-        const codeY = botBY + cornerH + 1.5 * cqw * ms;
+        ctx.fillRect(mx, botBracketY, lw, cornerH);
+        ctx.fillRect(mx + bracketW - lw, botBracketY, lw, cornerH);
+        ctx.fillRect(mx, botLineY, bracketW, lw);
+
+        // ── Code section ──────────────────────────────────
+        const codeY = botBracketY + cornerH + 1.5 * cqw * ms;
         ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
         ctx.textBaseline = 'top';
         ctx.fillText(data.codeLabel, cenX, codeY);
         ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
-        ctx.fillText(data.codeValue, cenX, codeY + labelSize);
+        ctx.fillText(data.codeValue, cenX, codeY + labelSize * 1.1);
       }
 
       // ── SIZES ────────────────────────────────────────────
