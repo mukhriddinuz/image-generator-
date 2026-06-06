@@ -41,7 +41,8 @@ function App() {
   const [magnifierPoint, setMagnifierPoint] = useState(savedState?.magnifierPoint || {x: 65, y: 75});
   const [showMagnifier, setShowMagnifier] = useState(savedState?.showMagnifier ?? true);
   const [isPicking, setIsPicking] = useState(false);
-  const [aspectRatio, setAspectRatio] = useState(1.25); // Default 4:5
+  const [isExporting, setIsExporting] = useState(false);
+  const [aspectRatio, setAspectRatio] = useState(1.25);
 
   // Layout settings
   const [activeTab, setActiveTab] = useState('content');
@@ -291,11 +292,14 @@ function App() {
   };
 
   const exportImage = useCallback(async () => {
-    if (canvasRef.current === null) {
-      return;
-    }
+    if (!exportRef.current || !imageRef.current) return;
+    setIsExporting(true);
     try {
-      const dataUrl = await toJpeg(exportRef.current, { quality: 0.95, pixelRatio: 2 });
+      const { naturalWidth, naturalHeight } = imageRef.current;
+      const { width: displayedWidth } = imageRef.current.getBoundingClientRect();
+      const pixelRatio = displayedWidth > 0 ? naturalWidth / displayedWidth : 2;
+
+      const dataUrl = await toJpeg(exportRef.current, { quality: 0.95, pixelRatio });
       const link = document.createElement('a');
       link.download = `milana-presentation-${Date.now()}.jpg`;
       link.href = dataUrl;
@@ -303,8 +307,10 @@ function App() {
     } catch (err) {
       console.error('Failed to export image', err);
       alert('Failed to generate image');
+    } finally {
+      setIsExporting(false);
     }
-  }, [canvasRef]);
+  }, [exportRef, imageRef]);
 
   // Calculate background position for magnifier
   const getMagnifierStyle = () => {
@@ -585,9 +591,9 @@ function App() {
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
-          <button className="btn-primary" onClick={exportImage} disabled={!image}>
+          <button className="btn-primary" onClick={exportImage} disabled={!image || isExporting}>
             <Download size={20} />
-            Export Image
+            {isExporting ? 'Yuklanmoqda...' : 'Export Image'}
           </button>
           
           <button className="btn-secondary" onClick={saveTemplate} style={{ background: '#3b3b3b', borderColor: '#4b4b4b' }}>
