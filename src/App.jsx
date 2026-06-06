@@ -35,6 +35,7 @@ function App() {
   const [freeSizeText, setFreeSizeText] = useState(savedState?.freeSizeText || 'Free size');
   const [freeSizeHasBorder, setFreeSizeHasBorder] = useState(savedState?.freeSizeHasBorder ?? false);
   const [badgeHasBorder, setBadgeHasBorder] = useState(savedState?.badgeHasBorder ?? true);
+  const [borderWidth, setBorderWidth] = useState(savedState?.borderWidth ?? 16);
 
   // Magnifier state
   const [magnifierPoint, setMagnifierPoint] = useState(savedState?.magnifierPoint || {x: 65, y: 75}); // Default point
@@ -94,7 +95,7 @@ function App() {
 
   const saveTemplate = () => {
     const template = {
-      data, customSizesText, sizesMode, freeSizeText, freeSizeHasBorder, badgeHasBorder, positions, elementStyles, magnifierPoint
+      data, customSizesText, sizesMode, freeSizeText, freeSizeHasBorder, badgeHasBorder, positions, elementStyles, magnifierPoint, borderWidth
     };
     localStorage.setItem('milana_saved_template', JSON.stringify(template));
     alert("Shablon muvaffaqiyatli saqlandi! Endi sahifaga har kirganingizda barcha elementlar va matnlar aynan shu holatda joylashib turadi.");
@@ -126,6 +127,7 @@ function App() {
   
   const canvasRef = useRef(null);
   const imageRef = useRef(null);
+  const exportRef = useRef(null);
 
   const updateContainerWidth = useCallback(() => {
     if (canvasRef.current && imageRef.current) {
@@ -290,7 +292,7 @@ function App() {
       return;
     }
     try {
-      const dataUrl = await toJpeg(canvasRef.current, { quality: 0.95, pixelRatio: 2 });
+      const dataUrl = await toJpeg(exportRef.current, { quality: 0.95, pixelRatio: 2 });
       const link = document.createElement('a');
       link.download = `milana-presentation-${Date.now()}.jpg`;
       link.href = dataUrl;
@@ -567,6 +569,11 @@ function App() {
           )}
         </div>
 
+        <div className="input-group">
+          <label>Oq Ramka Kengligi: {borderWidth}px</label>
+          <input type="range" min="0" max="60" step="2" value={borderWidth} onChange={e => setBorderWidth(Number(e.target.value))} style={{width: '100%'}}/>
+        </div>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
           <button className="btn-primary" onClick={exportImage} disabled={!image}>
             <Download size={20} />
@@ -596,8 +603,17 @@ function App() {
         )}
 
         {image ? (
-          <div 
-            className={`canvas-wrapper ${isPicking ? 'picking-mode' : ''}`} 
+          <div
+            ref={exportRef}
+            style={{
+              background: '#ffffff',
+              padding: `${borderWidth}px`,
+              display: 'inline-block',
+              lineHeight: 0
+            }}
+          >
+          <div
+            className={`canvas-wrapper ${isPicking ? 'picking-mode' : ''}`}
             ref={canvasRef}
             onClick={handleCanvasClick}
           >
@@ -837,6 +853,7 @@ function App() {
                 </>
               )}
             </div>
+          </div>
           </div>
         ) : (
           <div className="empty-state">
