@@ -296,7 +296,7 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
-  width: calc(100% - 10 * var(--cqw));
+  width: calc(100% - 6 * var(--cqw));
   position: relative;
 }
 

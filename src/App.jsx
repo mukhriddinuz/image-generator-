@@ -403,28 +403,37 @@ function App() {
 
         ctx.fillStyle = color;
 
-        // Measure texts to determine bracket width
+        // Measure model value and its first/last character widths
         ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
         const valW = ctx.measureText(data.modelValue).width;
+        const firstCharW = data.modelValue.length > 0
+          ? ctx.measureText(data.modelValue.charAt(0)).width : 0;
+        const lastCharW = data.modelValue.length > 0
+          ? ctx.measureText(data.modelValue.charAt(data.modelValue.length - 1)).width : 0;
+
+        // Bracket corners: start after 1st char, end before last char
+        const textLeftX = mx;
+        const cenX = textLeftX + valW / 2;
+        const bracketLeft = textLeftX + firstCharW;
+        const bracketRight = textLeftX + valW - lastCharW;
+        const bracketW = bracketRight - bracketLeft;
+        const bx2 = bracketLeft; // alias for bracket drawing
+
         ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
         const labW = ctx.measureText(data.modelLabel).width;
-        // Bracket width matches value width (like CSS 100% - 10cqw of overlay)
-        const bracketW = valW - 2 * cqw * ms;
-        const cenX = mx + bracketW / 2;
 
         // ── Top bracket: horizontal line + label row ──────
-        // Label row height ≈ labelSize * 1.1 (same as CSS flex row)
         const labelRowH = labelSize * 1.1;
-        const topLineY = my + labelRowH / 2 - lw / 2; // center of row
+        const topLineY = my + labelRowH / 2 - lw / 2;
 
-        // Left and right corners: start at line center, go DOWN
-        ctx.fillRect(mx, topLineY, lw, cornerH);
-        ctx.fillRect(mx + bracketW - lw, topLineY, lw, cornerH);
+        // Left and right corners
+        ctx.fillRect(bx2, topLineY, lw, cornerH);
+        ctx.fillRect(bx2 + bracketW - lw, topLineY, lw, cornerH);
 
         // Horizontal lines (gap in the middle for label)
         const halfLineW = (bracketW - labW - lPad * 2 - lw * 2) / 2;
-        ctx.fillRect(mx + lw, topLineY, halfLineW, lw);
-        ctx.fillRect(mx + lw + halfLineW + labW + lPad * 2, topLineY, halfLineW, lw);
+        ctx.fillRect(bx2 + lw, topLineY, halfLineW, lw);
+        ctx.fillRect(bx2 + lw + halfLineW + labW + lPad * 2, topLineY, halfLineW, lw);
 
         // Label text centered in row
         ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
@@ -442,9 +451,9 @@ function App() {
         const botBracketY = valY + valH + gap;
         const botLineY = botBracketY + cornerH - lw;
 
-        ctx.fillRect(mx, botBracketY, lw, cornerH);
-        ctx.fillRect(mx + bracketW - lw, botBracketY, lw, cornerH);
-        ctx.fillRect(mx, botLineY, bracketW, lw);
+        ctx.fillRect(bx2, botBracketY, lw, cornerH);
+        ctx.fillRect(bx2 + bracketW - lw, botBracketY, lw, cornerH);
+        ctx.fillRect(bx2, botLineY, bracketW, lw);
 
         // ── Code section ──────────────────────────────────
         const codeY = botBracketY + cornerH + 1.5 * cqw * ms;
