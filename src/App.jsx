@@ -35,7 +35,7 @@ function App() {
   const [freeSizeText, setFreeSizeText] = useState(savedState?.freeSizeText || 'Free size');
   const [freeSizeHasBorder, setFreeSizeHasBorder] = useState(savedState?.freeSizeHasBorder ?? false);
   const [badgeHasBorder, setBadgeHasBorder] = useState(savedState?.badgeHasBorder ?? true);
-  const [borderWidth, setBorderWidth] = useState(savedState?.borderWidth ?? 16);
+  const borderWidth = 16;
 
   // Magnifier state
   const [magnifierPoint, setMagnifierPoint] = useState(savedState?.magnifierPoint || {x: 65, y: 75}); // Default point
@@ -567,11 +567,6 @@ function App() {
               </label>
             </div>
           )}
-        </div>
-
-        <div className="input-group">
-          <label>Oq Ramka Kengligi: {borderWidth}px</label>
-          <input type="range" min="0" max="60" step="2" value={borderWidth} onChange={e => setBorderWidth(Number(e.target.value))} style={{width: '100%'}}/>
         </div>
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '16px' }}>
