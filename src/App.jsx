@@ -1,6 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
 import { Upload, Download, Crosshair, Image as ImageIcon } from 'lucide-react';
-import { toJpeg } from 'html-to-image';
 import './index.css';
 
 function App() {
@@ -292,25 +291,274 @@ function App() {
   };
 
   const exportImage = useCallback(async () => {
-    if (!exportRef.current || !imageRef.current) return;
+    if (!imageRef.current) return;
     setIsExporting(true);
     try {
-      const { naturalWidth, naturalHeight } = imageRef.current;
-      const { width: displayedWidth } = imageRef.current.getBoundingClientRect();
-      const pixelRatio = displayedWidth > 0 ? naturalWidth / displayedWidth : 2;
+      await document.fonts.ready;
 
-      const dataUrl = await toJpeg(exportRef.current, { quality: 0.95, pixelRatio });
-      const link = document.createElement('a');
-      link.download = `milana-presentation-${Date.now()}.jpg`;
-      link.href = dataUrl;
-      link.click();
+      const img = imageRef.current;
+      const W = img.naturalWidth;
+      const H = img.naturalHeight;
+      const cqw = W / 100;
+      const bpx = Math.round(borderWidth * W / img.getBoundingClientRect().width);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = W + bpx * 2;
+      canvas.height = H + bpx * 2;
+      const ctx = canvas.getContext('2d');
+
+      // White border background
+      ctx.fillStyle = '#ffffff';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Original image (full resolution)
+      ctx.drawImage(img, bpx, bpx, W, H);
+
+      // cqw coord → canvas pixel
+      const cx = n => bpx + n * cqw;
+
+      const loadImg = src => new Promise((res, rej) => {
+        const i = new Image();
+        i.crossOrigin = 'anonymous';
+        i.onload = () => res(i);
+        i.onerror = rej;
+        i.src = src;
+      });
+
+      // ── LOGO ────────────────────────────────────────────
+      if (logo) {
+        try {
+          const lImg = await loadImg(logo);
+          const lw = positions.logo.scale * cqw;
+          const lh = lImg.naturalWidth > 0 ? lw * lImg.naturalHeight / lImg.naturalWidth : lw * 0.4;
+          ctx.globalAlpha = Number(elementStyles.logo.opacity) || 1;
+          ctx.drawImage(lImg, cx(positions.logo.x), cx(positions.logo.y), lw, lh);
+          ctx.globalAlpha = 1;
+        } catch (e) { /* logo yuklanmasa o'tkazib yuborish */ }
+      }
+
+      // ── BADGE ───────────────────────────────────────────
+      {
+        const bs = Number(elementStyles.badge.scale) || 1;
+        const bx = cx(positions.badge.x);
+        const by = cx(positions.badge.y);
+        const badgeW = 18 * cqw * bs;
+        const op = Number(elementStyles.badge.opacity) || 1;
+        const titleSize = 3 * cqw * bs;
+        const subtitleSize = 1.1 * cqw * bs;
+        const tPad = 0.8 * cqw * bs;
+        const bPad = 0.4 * cqw * bs;
+        const blw = 0.15 * cqw;
+        const titleLines = data.badgeTitle.split('\n');
+        const subtitleLines = data.badgeSubtitle.split('\n');
+        const topH = tPad + titleLines.length * titleSize * 1.15 + tPad * 0.75;
+        const botH = bPad + subtitleLines.length * subtitleSize * 1.2 + bPad;
+        const totalH = topH + botH;
+
+        ctx.fillStyle = hexToRgba(elementStyles.badge.topBg, op);
+        ctx.fillRect(bx, by, badgeW, topH);
+        ctx.fillStyle = hexToRgba(elementStyles.badge.bottomBg, op);
+        ctx.fillRect(bx, by + topH, badgeW, botH);
+
+        if (badgeHasBorder) {
+          ctx.strokeStyle = elementStyles.badge.borderColor;
+          ctx.lineWidth = blw;
+          ctx.strokeRect(bx + blw / 2, by + blw / 2, badgeW - blw, totalH - blw);
+          ctx.beginPath(); ctx.moveTo(bx, by + topH); ctx.lineTo(bx + badgeW, by + topH); ctx.stroke();
+        }
+
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        ctx.fillStyle = elementStyles.badge.titleColor;
+        ctx.font = `800 ${titleSize}px Inter, sans-serif`;
+        titleLines.forEach((line, i) => ctx.fillText(line, bx + badgeW / 2, by + tPad + i * titleSize * 1.15));
+
+        ctx.fillStyle = elementStyles.badge.subtitleColor;
+        ctx.font = `800 ${subtitleSize}px Inter, sans-serif`;
+        subtitleLines.forEach((line, i) => ctx.fillText(line, bx + badgeW / 2, by + topH + bPad + i * subtitleSize * 1.2));
+      }
+
+      // ── MODEL / CODE ─────────────────────────────────────
+      {
+        const ms = Number(elementStyles.modelCode.scale) || 1;
+        const mx = cx(positions.modelCode.x);
+        const my = cx(positions.modelCode.y);
+        const color = elementStyles.modelCode.textColor || '#1a1a1a';
+        const lw = 0.15 * cqw * ms;
+        const cornerH = 1.0 * cqw * ms;
+        const labelSize = 2.2 * cqw * ms;
+        const valueSize = 5 * cqw * ms;
+        const lPad = 0.5 * cqw * ms;
+
+        ctx.fillStyle = color; ctx.strokeStyle = color;
+
+        ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
+        const valW = ctx.measureText(data.modelValue).width;
+        ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
+        const labW = ctx.measureText(data.modelLabel).width;
+        const bracketW = Math.max(valW, labW + lPad * 2) + lw * 2;
+        const cenX = mx + bracketW / 2;
+
+        // Top bracket corners + horizontal lines + label
+        ctx.fillRect(mx, my, lw, cornerH);
+        ctx.fillRect(mx + bracketW - lw, my, lw, cornerH);
+        const halfLW = (bracketW - labW - lPad * 2 - lw * 2) / 2;
+        ctx.fillRect(mx + lw, my, halfLW, lw);
+        ctx.fillRect(cenX + labW / 2 + lPad, my, halfLW, lw);
+        ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.fillText(data.modelLabel, cenX, my + lw / 2);
+
+        // Model value
+        const valY = my + cornerH;
+        ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.fillText(data.modelValue, cenX, valY);
+
+        // Bottom bracket
+        const botBY = valY + valueSize;
+        ctx.fillRect(mx, botBY, lw, cornerH);
+        ctx.fillRect(mx + bracketW - lw, botBY, lw, cornerH);
+        ctx.fillRect(mx, botBY + cornerH - lw, bracketW, lw);
+
+        // Code section
+        const codeY = botBY + cornerH + 1.5 * cqw * ms;
+        ctx.font = `500 ${labelSize}px Oswald, sans-serif`;
+        ctx.textBaseline = 'top';
+        ctx.fillText(data.codeLabel, cenX, codeY);
+        ctx.font = `600 ${valueSize}px Oswald, sans-serif`;
+        ctx.fillText(data.codeValue, cenX, codeY + labelSize);
+      }
+
+      // ── SIZES ────────────────────────────────────────────
+      if (sizesMode === 'list' && selectedSizes.length > 0) {
+        const sxS = Number(elementStyles.sizes.scaleX) || 1;
+        const syS = Number(elementStyles.sizes.scaleY) || 1;
+        const op = Number(elementStyles.sizes.opacity) || 1;
+        const sX = cx(positions.sizes.x);
+        const sY = cx(positions.sizes.y);
+        const itemH = 3.5 * cqw * syS;
+        const boxW = 3.5 * cqw * sxS;
+        const gap = 0.5 * cqw;
+        const padX = 1.5 * cqw;
+        const padY = 1.0 * cqw;
+        const tSize = 2.2 * cqw;
+        const blw = 0.15 * cqw;
+        ctx.font = `700 ${tSize}px Inter, sans-serif`;
+        const maxTW = Math.max(...selectedSizes.map(s => ctx.measureText(s).width));
+        const contW = padX + boxW + 0.3 * cqw + maxTW + padX;
+        const contH = padY * 2 + selectedSizes.length * itemH + (selectedSizes.length - 1) * gap;
+
+        ctx.fillStyle = hexToRgba(elementStyles.sizes.bgColor, op);
+        ctx.fillRect(sX, sY, contW, contH);
+
+        selectedSizes.forEach((size, i) => {
+          const iy = sY + padY + i * (itemH + gap);
+          const ix = sX + padX;
+          ctx.strokeStyle = elementStyles.sizes.borderColor;
+          ctx.lineWidth = blw;
+          // 3-sided box (open right)
+          ctx.beginPath();
+          ctx.moveTo(ix + boxW, iy); ctx.lineTo(ix, iy); ctx.lineTo(ix, iy + itemH); ctx.lineTo(ix + boxW, iy + itemH);
+          ctx.stroke();
+          // Partial right connectors (top 25%, bottom 25%)
+          const conn = itemH * 0.25;
+          ctx.beginPath(); ctx.moveTo(ix + boxW, iy); ctx.lineTo(ix + boxW, iy + conn); ctx.stroke();
+          ctx.beginPath(); ctx.moveTo(ix + boxW, iy + itemH - conn); ctx.lineTo(ix + boxW, iy + itemH); ctx.stroke();
+
+          ctx.fillStyle = elementStyles.sizes.textColor;
+          ctx.font = `700 ${tSize}px Inter, sans-serif`;
+          ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+          ctx.fillText(size, ix + boxW + 0.3 * cqw, iy + itemH / 2);
+        });
+
+      } else if (sizesMode === 'badge') {
+        const sxS = Number(elementStyles.sizes.scaleX) || 1;
+        const syS = Number(elementStyles.sizes.scaleY) || 1;
+        const op = Number(elementStyles.sizes.opacity) || 1;
+        const fsX = cx(positions.sizes.x);
+        const fsY = cx(positions.sizes.y);
+        const tSize = 2 * cqw;
+        ctx.font = `700 ${tSize}px Inter, sans-serif`;
+        const lines = freeSizeText.split('\n');
+        const maxLW = Math.max(...lines.map(l => ctx.measureText(l).width));
+        const pX = 4 * cqw * sxS;
+        const pY = 1.5 * cqw * syS;
+        const lh = tSize * 1.2;
+        const bW = maxLW + pX * 2;
+        const bH = lines.length * lh + pY * 2;
+        ctx.fillStyle = hexToRgba(elementStyles.sizes.bgColor, op);
+        ctx.fillRect(fsX, fsY, bW, bH);
+        if (freeSizeHasBorder) {
+          ctx.strokeStyle = elementStyles.sizes.borderColor;
+          ctx.lineWidth = 0.2 * cqw;
+          ctx.strokeRect(fsX, fsY, bW, bH);
+        }
+        ctx.fillStyle = elementStyles.sizes.textColor;
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
+        lines.forEach((line, i) => ctx.fillText(line, fsX + bW / 2, fsY + pY + i * lh));
+      }
+
+      // ── MAGNIFIER ────────────────────────────────────────
+      if (showMagnifier && (magnifierPoint || fabricImage)) {
+        const mScale = Number(elementStyles.magnifier.scale) || 1;
+        const mDiam = 24 * cqw * mScale;
+        const mR = mDiam / 2;
+        const mCx = bpx + positions.magnifier.x * cqw + mR;
+        const mCy = bpx + positions.magnifier.y * cqw + mR;
+        const bColor = elementStyles.magnifier.borderColor || '#ffffff';
+        const blw = 0.2 * cqw;
+
+        if (magnifierPoint) {
+          const ptX = bpx + magnifierPoint.x / 100 * W;
+          const ptY = bpx + magnifierPoint.y / 100 * H;
+          ctx.strokeStyle = bColor; ctx.lineWidth = blw;
+          ctx.beginPath(); ctx.moveTo(ptX, ptY); ctx.lineTo(mCx, mCy); ctx.stroke();
+          ctx.fillStyle = bColor;
+          ctx.beginPath(); ctx.arc(ptX, ptY, 0.5 * cqw, 0, Math.PI * 2); ctx.fill();
+        }
+
+        ctx.save();
+        ctx.beginPath(); ctx.arc(mCx, mCy, mR - blw, 0, Math.PI * 2); ctx.clip();
+        if (fabricImage) {
+          try {
+            const fImg = await loadImg(fabricImage);
+            ctx.drawImage(fImg, mCx - mR, mCy - mR, mDiam, mDiam);
+          } catch (e) {}
+        } else if (magnifierPoint) {
+          const zoom = 3;
+          const srcW = W / zoom; const srcH = H / zoom;
+          const srcX = Math.max(0, Math.min(magnifierPoint.x / 100 * W - srcW / 2, W - srcW));
+          const srcY = Math.max(0, Math.min(magnifierPoint.y / 100 * H - srcH / 2, H - srcH));
+          ctx.drawImage(img, srcX, srcY, srcW, srcH, mCx - mR, mCy - mR, mDiam, mDiam);
+        }
+        ctx.restore();
+
+        ctx.strokeStyle = bColor; ctx.lineWidth = blw;
+        ctx.beginPath(); ctx.arc(mCx, mCy, mR - blw / 2, 0, Math.PI * 2); ctx.stroke();
+      }
+
+      // ── EXPORT ──────────────────────────────────────────
+      await new Promise(resolve => {
+        canvas.toBlob(blob => {
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.download = `milana-presentation-${Date.now()}.jpg`;
+          a.href = url;
+          a.click();
+          setTimeout(() => URL.revokeObjectURL(url), 1000);
+          resolve();
+        }, 'image/jpeg', 0.95);
+      });
+
     } catch (err) {
-      console.error('Failed to export image', err);
-      alert('Failed to generate image');
+      console.error('Export failed:', err);
+      alert('Export muvaffaqiyatsiz tugadi');
     } finally {
       setIsExporting(false);
     }
-  }, [exportRef, imageRef]);
+  }, [image, logo, fabricImage, positions, elementStyles, data, selectedSizes, sizesMode,
+      freeSizeText, freeSizeHasBorder, badgeHasBorder, magnifierPoint, showMagnifier,
+      borderWidth, hexToRgba, imageRef]);
 
   // Calculate background position for magnifier
   const getMagnifierStyle = () => {
