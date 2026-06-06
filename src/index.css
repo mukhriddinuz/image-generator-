@@ -302,14 +302,14 @@ body {
 
 .bracket-horizontal-line {
   flex-grow: 2;
-  height: calc(0.15 * var(--cqw));
+  height: calc(0.2 * var(--cqw));
   background-color: var(--model-color);
 }
 
 .bracket-left-corner, .bracket-right-corner {
   position: absolute;
-  width: calc(0.15 * var(--cqw));
-  height: calc(1.0 * var(--cqw));
+  width: calc(0.2 * var(--cqw));
+  height: calc(2.5 * var(--cqw));
   background-color: var(--model-color);
 }
 

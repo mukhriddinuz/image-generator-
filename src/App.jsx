@@ -394,8 +394,8 @@ function App() {
         const mx = cx(positions.modelCode.x);
         const my = cx(positions.modelCode.y);
         const color = elementStyles.modelCode.textColor || '#1a1a1a';
-        const lw = 0.15 * cqw * ms;
-        const cornerH = 1.0 * cqw * ms;
+        const lw = 0.2 * cqw * ms;
+        const cornerH = 2.5 * cqw * ms;
         const labelSize = 2.2 * cqw * ms;
         const valueSize = 5 * cqw * ms;
         const lPad = 0.5 * cqw * ms;
